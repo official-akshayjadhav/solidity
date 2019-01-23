@@ -120,7 +120,7 @@ but it is packed tightly in calldata and memory. ``string`` is equal to ``bytes`
 length or index access.
 
 While Solidity does not have string manipulation functions, you can use
-this implicit conversion for equivalent functionality. For example to compare
+this array equivalence for equivalent functionality. For example to compare
 two strings ``keccak256(abi.encode(s1)) == keccak256(abi.encode(s2))``, or to
 concatenate two strings already encoded with ``abi.encodePacked(s1, s2);``.
 
