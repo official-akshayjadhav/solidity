@@ -9,6 +9,7 @@ Language Features:
 
 
 Compiler Features:
+ * Implement packed encoding for ABIEncoderV2.
 
 
 Bugfixes:
