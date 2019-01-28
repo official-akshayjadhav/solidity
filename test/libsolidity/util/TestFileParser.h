@@ -185,6 +185,7 @@ private:
 
 	bool advanceLine();
 	void expectCharacter(char const _char);
+	void expectCharacterSequence(std::string const& _charSequence);
 	void skipWhitespaces();
 
 	Scanner m_scanner;

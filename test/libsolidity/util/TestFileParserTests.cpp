@@ -102,8 +102,7 @@ BOOST_AUTO_TEST_CASE(call_comments)
 BOOST_AUTO_TEST_CASE(call_arguments)
 {
 	char const* source = R"(
-		// f(uint256): 5
-		// : 314 # optional ether value
+		// f(uint256), 314: 5 # optional ether value
 		// -> -4
 	)";
 	auto const& calls = parse(source);
@@ -129,8 +128,7 @@ BOOST_AUTO_TEST_CASE(call_expectations_missing)
 BOOST_AUTO_TEST_CASE(call_ether_value_expectations_missing)
 {
 	char const* source = R"(
-		// f()
-		// : 0)";
+		// f(), 0)";
 	BOOST_CHECK_THROW(parse(source), langutil::Error);
 }
 
@@ -146,8 +144,7 @@ BOOST_AUTO_TEST_CASE(call_arguments_invalid)
 BOOST_AUTO_TEST_CASE(call_ether_value_invalid)
 {
 	char const* source = R"(
-		// f(uint256): 1
-		// : abc
+		// f(uint256), abc : 1
 		// -> 1
 	)";
 	BOOST_CHECK_THROW(parse(source), langutil::Error);
@@ -185,7 +182,7 @@ BOOST_AUTO_TEST_CASE(call_multiple_arguments)
 BOOST_AUTO_TEST_CASE(call_multiple_arguments_mixed_format)
 {
 	char const* source = R"(
-		// f(uint256, uint256): -1, 2
+		// f(uint256, uint256),314: -1, 2
 		// -> 1, -2
 	)";
 	auto const& calls = parse(source);
@@ -193,6 +190,7 @@ BOOST_AUTO_TEST_CASE(call_multiple_arguments_mixed_format)
 
 	auto const& call = calls.at(0);
 	BOOST_CHECK_EQUAL(call.signature, "f(uint256, uint256)");
+	BOOST_CHECK_EQUAL(call.value, u256{314});
 	BOOST_CHECK_EQUAL(call.arguments.raw, "-1, 2");
 	ABI_CHECK(call.arguments.rawBytes, toBigEndian(u256{-1}) + toBigEndian(u256{2}));
 	ABI_CHECK(call.expectations.rawBytes, toBigEndian(u256{1}) + toBigEndian(u256{-2}));

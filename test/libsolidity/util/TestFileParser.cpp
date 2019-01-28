@@ -146,17 +146,12 @@ vector<dev::solidity::test::FunctionCall> TestFileParser::parseFunctionCalls()
 
 		FunctionCall call;
 		call.signature = parseFunctionCallSignature();
+		if (auto optionalValue = parseFunctionCallValue())
+			call.value = optionalValue.get();
 		call.arguments = parseFunctionCallArgument();
 
 		if (!advanceLine())
-			throw Error(Error::Type::ParserError, "Expected optional ether value or result.");
-
-		if (auto optionalValue = parseFunctionCallValue())
-		{
-			call.value = optionalValue.get();
-			if (!advanceLine())
-				throw Error(Error::Type::ParserError, "Expected result missing.");
-		}
+			throw Error(Error::Type::ParserError, "Expected result missing.");
 		call.expectations = parseFunctionCallExpectations();
 
 		if (call.expectations.status)
@@ -244,8 +239,7 @@ FunctionCallExpectations TestFileParser::parseFunctionCallExpectations()
 	}
 	else
 	{
-		for (char c: string("REVERT"))
-			expectCharacter(c);
+		expectCharacterSequence("REVERT");
 		result.status = false;
 	}
 	return result;
@@ -253,28 +247,24 @@ FunctionCallExpectations TestFileParser::parseFunctionCallExpectations()
 
 boost::optional<u256> TestFileParser::parseFunctionCallValue()
 {
-	if (m_scanner.current() != ':')
-		return boost::none;
-
-	expectCharacter(':');
 	skipWhitespaces();
+	if (m_scanner.current() != ',')
+		return boost::none;
+	m_scanner.advance();
 
 	u256 value;
-	if (!m_scanner.eol() && m_scanner.current() != '#')
+	auto etherBegin = m_scanner.position();
+	while (!m_scanner.eol() && m_scanner.current() != ':')
+		m_scanner.advance();
+	string etherString(etherBegin, m_scanner.position());
+	boost::algorithm::trim(etherString);
+	try
 	{
-		auto etherBegin = m_scanner.position();
-		while (!m_scanner.eol() && m_scanner.current() != '#')
-			m_scanner.advance();
-		string etherString(etherBegin, m_scanner.position());
-		boost::algorithm::trim(etherString);
-		try
-		{
-			value = u256(etherString);
-		}
-		catch (exception const&)
-		{
-			throw Error(Error::Type::ParserError, "Ether value encoding invalid.");
-		}
+		value = u256(etherString);
+	}
+	catch (exception const&)
+	{
+		throw Error(Error::Type::ParserError, "Ether value encoding invalid.");
 	}
 	return std::move(value);
 }
@@ -294,6 +284,12 @@ bool TestFileParser::advanceLine()
 void TestFileParser::expectCharacter(char const _char)
 {
 	expect(m_scanner.position(), m_scanner.endPosition(), _char);
+}
+
+void TestFileParser::expectCharacterSequence(string const& _charSequence)
+{
+	for (char c: _charSequence)
+		expectCharacter(c);
 }
 
 void TestFileParser::skipWhitespaces()
