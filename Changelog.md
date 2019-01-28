@@ -9,6 +9,7 @@ Language Features:
 
 
 Compiler Features:
+ * Optimizer: Take shortest representation for store-as-data option in the constant optimizer.
 
 
 Bugfixes:
