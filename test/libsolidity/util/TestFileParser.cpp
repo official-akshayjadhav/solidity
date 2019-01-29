@@ -148,7 +148,7 @@ vector<dev::solidity::test::FunctionCall> TestFileParser::parseFunctionCalls()
 		call.signature = parseFunctionCallSignature();
 		if (auto optionalValue = parseFunctionCallValue())
 			call.value = optionalValue.get();
-		call.arguments = parseFunctionCallArgument();
+		call.arguments = parseFunctionCallArguments();
 
 		if (!advanceLine())
 			throw Error(Error::Type::ParserError, "Expected result missing.");
@@ -166,15 +166,11 @@ vector<dev::solidity::test::FunctionCall> TestFileParser::parseFunctionCalls()
 
 string TestFileParser::parseFunctionCallSignature()
 {
-	auto signatureBegin = m_scanner.position();
-	while (!m_scanner.eol() && m_scanner.current() != ')')
-		m_scanner.advance();
-	expectCharacter(')');
-
-	return string{signatureBegin, m_scanner.position()};
+	string signature = parseUntilCharacter(')', true);
+	return signature;
 }
 
-FunctionCallArgs TestFileParser::parseFunctionCallArgument()
+FunctionCallArgs TestFileParser::parseFunctionCallArguments()
 {
 	skipWhitespaces();
 
@@ -186,14 +182,11 @@ FunctionCallArgs TestFileParser::parseFunctionCallArgument()
 			expectCharacter(':');
 			skipWhitespaces();
 
-			auto argumentBegin = m_scanner.position();
-			// TODO: allow # in quotes
-			while (!m_scanner.eol() && m_scanner.current() != '#')
-				m_scanner.advance();
-			arguments.raw = string{argumentBegin, m_scanner.position()};
-			boost::algorithm::trim(arguments.raw);
+			string rawArguments = parseUntilCharacter('#');
+			boost::algorithm::trim(rawArguments);
 
-			auto bytesFormat = formattedStringToBytes(arguments.raw);
+			auto bytesFormat = formattedStringToBytes(rawArguments);
+			arguments.raw = rawArguments;
 			arguments.rawBytes = bytesFormat.first;
 			arguments.formats = bytesFormat.second;
 		}
@@ -217,17 +210,13 @@ FunctionCallExpectations TestFileParser::parseFunctionCallExpectations()
 		expectCharacter('>');
 		skipWhitespaces();
 
-		auto expectedResultBegin = m_scanner.position();
-		// TODO: allow # in quotes
-		while (!m_scanner.eol() && m_scanner.current() != '#')
-			m_scanner.advance();
-		result.raw = string{expectedResultBegin, m_scanner.position()};
-		boost::algorithm::trim(result.raw);
+		string rawExpectation = parseUntilCharacter('#');
+		boost::algorithm::trim(rawExpectation);
+		auto bytesFormat = formattedStringToBytes(rawExpectation);
 
-		auto bytesFormat = formattedStringToBytes(result.raw);
+		result.raw = rawExpectation;
 		result.rawBytes = bytesFormat.first;
 		result.formats = bytesFormat.second;
-
 		result.status = true;
 
 		if (!m_scanner.eol())
@@ -252,23 +241,27 @@ boost::optional<u256> TestFileParser::parseFunctionCallValue()
 		return boost::none;
 	m_scanner.advance();
 
-	u256 value;
-	auto etherBegin = m_scanner.position();
-	while (!m_scanner.eol() && m_scanner.current() != ':')
-		m_scanner.advance();
-	string etherString(etherBegin, m_scanner.position());
-	boost::algorithm::trim(etherString);
+	string rawEther = parseUntilCharacter(':');
+	boost::algorithm::trim(rawEther);
+
+	vector<string> tokens;
+	boost::split(tokens, rawEther, [](char c){ return c == ' '; });
+
+	if (tokens.size() != 2)
+		throw Error(Error::Type::ParserError, "Invalid ether declaration: " + rawEther);
+	if (tokens.at(1) != "ether")
+		throw Error(Error::Type::ParserError, "Value requires \"ether\" suffix.");
+
 	try
 	{
-		value = u256(etherString);
+		return u256{tokens.at(0)};
 	}
 	catch (exception const&)
 	{
-		throw Error(Error::Type::ParserError, "Ether value encoding invalid.");
+		throw Error(Error::Type::ParserError, "Cannot parse value: " + tokens.at(0));
 	}
-	return std::move(value);
+	return u256{};
 }
-
 
 bool TestFileParser::advanceLine()
 {
@@ -290,6 +283,16 @@ void TestFileParser::expectCharacterSequence(string const& _charSequence)
 {
 	for (char c: _charSequence)
 		expectCharacter(c);
+}
+
+string TestFileParser::parseUntilCharacter(char const _char, bool const _expect)
+{
+	auto begin = m_scanner.position();
+	while (!m_scanner.eol() && m_scanner.current() != _char)
+		m_scanner.advance();
+	if (_expect)
+		expectCharacter(_char);
+	return string{begin, m_scanner.position()};
 }
 
 void TestFileParser::skipWhitespaces()

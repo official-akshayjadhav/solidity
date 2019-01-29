@@ -102,7 +102,7 @@ BOOST_AUTO_TEST_CASE(call_comments)
 BOOST_AUTO_TEST_CASE(call_arguments)
 {
 	char const* source = R"(
-		// f(uint256), 314: 5 # optional ether value
+		// f(uint256), 314 ether: 5 # optional ether value
 		// -> -4
 	)";
 	auto const& calls = parse(source);
@@ -150,6 +150,15 @@ BOOST_AUTO_TEST_CASE(call_ether_value_invalid)
 	BOOST_CHECK_THROW(parse(source), langutil::Error);
 }
 
+BOOST_AUTO_TEST_CASE(call_ether_type_invalid)
+{
+	char const* source = R"(
+		// f(uint256), 2 btc : 1
+		// -> 1
+	)";
+	BOOST_CHECK_THROW(parse(source), langutil::Error);
+}
+
 BOOST_AUTO_TEST_CASE(call_arguments_mismatch)
 {
 	char const* source = R"(
@@ -182,7 +191,7 @@ BOOST_AUTO_TEST_CASE(call_multiple_arguments)
 BOOST_AUTO_TEST_CASE(call_multiple_arguments_mixed_format)
 {
 	char const* source = R"(
-		// f(uint256, uint256),314: -1, 2
+		// f(uint256, uint256),314 ether: -1, 2
 		// -> 1, -2
 	)";
 	auto const& calls = parse(source);

@@ -98,12 +98,10 @@ struct FunctionCall
  *
  * - Function calls defined in blocks:
  * // f(uint256, uint256): 1, 1 # Signature and comma-separated list of arguments
- * // : 0                       # (Optional) Ether value to be send with the call
  * // -> 1, 1                   # Expected result value
- * // g(uint256): 23
+ * // g(), 2 ether              # (Optional) Ether to be send with the call
  * // -> 2, 3
- * // h()
- * // : 314
+ * // h(uint256), 1 ether: 42
  * // REVERT
  * ...
  */
@@ -173,7 +171,7 @@ private:
 	/// Parses a comma-separated list of arguments passed with a function call.
 	/// Does not check for a potential mismatch between the signature and the number
 	/// or types of arguments.
-	FunctionCallArgs parseFunctionCallArgument();
+	FunctionCallArgs parseFunctionCallArguments();
 
 	/// Parses the expected result of a function call execution.
 	FunctionCallExpectations parseFunctionCallExpectations();
@@ -186,6 +184,7 @@ private:
 	bool advanceLine();
 	void expectCharacter(char const _char);
 	void expectCharacterSequence(std::string const& _charSequence);
+	std::string parseUntilCharacter(char const _char, bool const _expect = false);
 	void skipWhitespaces();
 
 	Scanner m_scanner;
