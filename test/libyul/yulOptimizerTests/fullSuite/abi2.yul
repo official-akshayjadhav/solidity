@@ -1092,28 +1092,28 @@
 //         }
 //         value0_57 := and(calldataload(headStart_55), 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF)
 //         value1_58 := calldataload(add(headStart_55, 32))
-//         let offset_62 := calldataload(add(headStart_55, 64))
+//         let offset := calldataload(add(headStart_55, 64))
 //         let _200 := 0xffffffffffffffff
-//         if gt(offset_62, _200)
+//         if gt(offset, _200)
 //         {
 //             revert(value4, value4)
 //         }
-//         let _202 := add(headStart_55, offset_62)
+//         let _202 := add(headStart_55, offset)
 //         if iszero(slt(add(_202, 0x1f), dataEnd_56))
 //         {
 //             revert(value4, value4)
 //         }
-//         let abi_decode_length_15_244 := calldataload(_202)
-//         if gt(abi_decode_length_15_244, _200)
+//         let abi_decode_length := calldataload(_202)
+//         if gt(abi_decode_length, _200)
 //         {
 //             revert(value4, value4)
 //         }
-//         if gt(add(add(_202, abi_decode_length_15_244), 32), dataEnd_56)
+//         if gt(add(add(_202, abi_decode_length), 32), dataEnd_56)
 //         {
 //             revert(value4, value4)
 //         }
 //         value2_59 := add(_202, 32)
-//         value3 := abi_decode_length_15_244
+//         value3 := abi_decode_length
 //         let _205 := calldataload(add(headStart_55, 96))
 //         if iszero(lt(_205, 3))
 //         {
