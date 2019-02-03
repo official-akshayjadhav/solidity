@@ -7,3 +7,4 @@ no. | Title | link | Desc. | Type | Status
 2 | smar tcontract development giude | https://ethereum.org/greeter | - | `blog` | :o:
 3 | DApp for beginners | https://dappsforbeginners.wordpress.com/ | DApp tutorial on ethereum with Solidity | `site` | :o:
 4 | solidity tutorial | https://ethereumbuilders.gitbooks.io/guide/content/en/solidity_tutorials.html | level: intermediate | `gitbook` | :o:
+5 | learn solidity by Block Geeks | https://blockgeeks.com/guides/solidity/ | level: intermeidate | `site` | :o:
