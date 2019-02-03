@@ -1,5 +1,5 @@
 # learning resources
-## 1. smart contract
+## 1. solidity: smart contract
 
 no. | Title | link | Desc. | Type | Status
 --- | ----- | ---- | ----- | ---- | -------
